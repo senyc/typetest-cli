@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools"]
+
+[project]
+    name = "typetest-cli"
+    version = "1.0.0"
+    authors = [
+        {name = "senyc"},
+    ]
+    description = "Prints an interactable line of text that records speed and accuracy of matching upon completion"
+    requires-python = ">=3.8"
+    dependencies = [
+        "rich",
+    ]
+    
+[project.scripts]
+    typetest = "typetest:main"
+    
+[tools.setuptools]
+    py_modules = ['typetest-cli']
