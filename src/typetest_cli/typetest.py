@@ -91,18 +91,17 @@ def main() -> None:
     else:
         file = get_random_file(SOURCE_DIR)
 
-
     with open(file, encoding='utf-8', mode='r') as file:
         DATA = file.read().strip('\n').strip(' ')
 
     total_character_count = len(DATA)
     user_input = ''
-    console = Console(soft_wrap=True, no_color=False)
+    console = Console(soft_wrap=False, no_color=False)
     start = end = None
 
-    with Live(console=console, refresh_per_second=30) as display:
+    with Live(console=console, auto_refresh=False) as display:
         while True:
-            display.update(displayed_text(DATA, user_input))
+            display.update(displayed_text(DATA, user_input), refresh=True)
             char = get_char()
             # Starts only after first character entered
             if start is None:
