@@ -19,12 +19,12 @@ user_dir = os.path.expanduser('~')
 here = os.path.abspath(os.path.dirname(__file__))
 
 SOURCE_DIR: Final[str] = f'{here}/text'
-EXTERN_DIR: Final[str] = f'{user_dir}.local/share/typetest-cli/text'
+EXTERN_DIR: Final[str] = f'{user_dir}/.local/share/typetest-cli/text'
 
 @contextmanager
 def raw_mode(file):
     """Puts the terminal into raw mode, allowing for full reading of user's input.
-    On exit, restores the terminal to the previous settings."""
+    On exit, restores the terminal to previous settings."""
     old_settings = termios.tcgetattr(file.fileno())
     try:
         tty.setraw(file.fileno())
@@ -33,32 +33,29 @@ def raw_mode(file):
         termios.tcsetattr(file.fileno(), termios.TCSADRAIN, old_settings)
 
 def get_char() -> str:
+    """Gets the next character input from the user"""
     with raw_mode(sys.stdin):
         char = sys.stdin.read(1)
     return char
 
-def displayed_text(source: str, user_input: str) -> str:
+def format_text(source: str, user_input: str) -> str:
     final_text = ''
     for source_char, input_char in zip(source, user_input):
         if source_char == input_char:
-            final_text += f'[green]{source_char}'
+            final_text += f'[green]{source_char}[/]'
         else:
-            final_text += (f'[red]{source_char}' if source_char != ' ' else '[red]_')
-    return final_text + '[blue]' + (source[len(user_input)] if source[len(user_input)] != ' ' else '_') + '[white]' + source[len(user_input) + 1: len(source):]
-
-def is_backspace(char: str) -> bool:
-    return char == '\x7f'
+            final_text += f"[red]{source_char if source_char != ' ' else '_'}[/]"
+    if len(user_input) < len(source):
+        return final_text + f"[blue]{source[len(user_input)]}[/]{source[len(user_input) + 1:]}"
+    return final_text
 
 def calc_wpm(time_seconds: float, letters: int) -> int:
     words = letters / 5
     minutes = time_seconds / 60
     return math.floor(words / minutes)
 
-def is_quit(char: str) -> bool:
-    return (char != '' and ord(char) == 3) or (char == '\n' or char == '\r')
-
-def calc_correctness_percent(failures: int, letters: int) -> int:
-    return round(((letters - failures) / letters) * 100)
+def get_accuracy(failures: int, letters: int) -> int:
+    return math.floor(((letters - failures) / letters) * 100)
 
 def count_failures(source: str, user_input: str) -> int:
     failures = 0
@@ -67,12 +64,28 @@ def count_failures(source: str, user_input: str) -> int:
             failures += 1
     return failures
 
-def get_random_file(*args):
+def get_random_file(*args) -> str:
     options = []
     for directory in args:
         files = glob.glob(f'{directory}/*')
         options.extend(files)
     return random.choice(options)
+
+def not_quit(char: str) -> bool:
+    """Checks for SIGINT or return"""
+    return not (char != '' and ord(char) == 3) or (char == '\n' or char == '\r')
+
+def add_to(current_input: str, new_char: str) -> str:
+    def is_backspace(char: str) -> bool:
+        return char == '\x7f'
+
+    if is_backspace(new_char):
+        if len(current_input) > 0:
+            return current_input[:-1]
+        else:
+            return current_input
+    return current_input + new_char
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -86,43 +99,35 @@ def main() -> None:
     parser.add_argument('--only-base', '-b', action='store_false', help='Only uses the base text')
 
     args = parser.parse_args()
-    if not args.only_base:
-        file = get_random_file(SOURCE_DIR, EXTERN_DIR)
-    else:
+    if args.only_base:
         file = get_random_file(SOURCE_DIR)
-
+    else:
+        file = get_random_file(SOURCE_DIR, EXTERN_DIR)
 
     with open(file, encoding='utf-8', mode='r') as file:
         DATA = file.read().strip('\n').strip(' ')
 
-    total_character_count = len(DATA)
-    user_input = ''
-    console = Console(soft_wrap=True, no_color=False)
+    console = Console(soft_wrap=False, no_color=False)
     start = end = None
+    user_input = ''
 
-    with Live(console=console, refresh_per_second=30) as display:
-        while True:
-            display.update(displayed_text(DATA, user_input))
-            char = get_char()
-            # Starts only after first character entered
+    with Live(console=console, auto_refresh=False) as display:
+        display.update(DATA, refresh=True)
+        while not_quit(char := get_char()) and len(user_input := add_to(user_input, char)) < len(DATA):
             if start is None:
                 start = time.time()
-            if is_quit(char):
-                return
-            user_input = user_input[:-1] if is_backspace(char) else user_input + char
-            if len(user_input) >= total_character_count:
-                end = time.time()
-                break
+            display.update(format_text(DATA, user_input), refresh=True)
+        end = time.time()
+        display.update(format_text(DATA, user_input), refresh=True)
 
-    # Validates the there is an endtime to display
-    if not end:
+    if len(user_input) != len(DATA):
         return
 
     if not args.hide_acc:
-        print(calc_correctness_percent(count_failures(DATA, user_input), total_character_count), "percent correct")
+        print(get_accuracy(count_failures(DATA, user_input), len(DATA)), "percent correct")
 
     if not args.hide_wpm:
-        print(calc_wpm(end - start, total_character_count), "words per minute")
+        print(calc_wpm(end - start, len(DATA)), "words per minute")
 
 
 if __name__ == '__main__':
