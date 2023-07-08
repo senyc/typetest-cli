@@ -3,6 +3,7 @@
 from contextlib import contextmanager
 from typing import Final
 import argparse
+import glob
 import math
 import os
 import random
@@ -14,7 +15,11 @@ import tty
 from rich.console import Console
 from rich.live import Live
 
-SOURCE_DIR: Final[str] = '.local/share/typetest-cli/text'
+user_dir = os.path.expanduser('~')
+here = os.path.abspath(os.path.dirname(__file__))
+
+SOURCE_DIR: Final[str] = f'{here}/text'
+EXTERN_DIR: Final[str] = f'{user_dir}.local/share/typetest-cli/text'
 
 @contextmanager
 def raw_mode(file):
@@ -62,6 +67,13 @@ def count_failures(source: str, user_input: str) -> int:
             failures += 1
     return failures
 
+def get_random_file(*args):
+    options = []
+    for directory in args:
+        files = glob.glob(f'{directory}/*')
+        options.extend(files)
+    return random.choice(options)
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog='typetest',
@@ -71,13 +83,16 @@ def main() -> None:
 
     parser.add_argument('--hide-acc', '-a', action='store_true', help='hides the accuracy statistic')
     parser.add_argument('--hide-wpm', '-w', action='store_true', help='hides the word per minute statistic')
+    parser.add_argument('--only-base', '-b', action='store_false', help='Only uses the base text')
 
-    user_dir = os.path.expanduser('~')
-    full_path = os.path.join(user_dir, SOURCE_DIR)
-    random_file_name = random.choice(os.listdir(full_path))
+    args = parser.parse_args()
+    if not args.only_base:
+        file = get_random_file(SOURCE_DIR, EXTERN_DIR)
+    else:
+        file = get_random_file(SOURCE_DIR)
 
-    # Reading the data from a random file
-    with open(f"{full_path}/{random_file_name}", encoding='utf-8', mode='r') as file:
+
+    with open(file, encoding='utf-8', mode='r') as file:
         DATA = file.read().strip('\n').strip(' ')
 
     total_character_count = len(DATA)
@@ -103,7 +118,6 @@ def main() -> None:
     if not end:
         return
 
-    args = parser.parse_args()
     if not args.hide_acc:
         print(calc_correctness_percent(count_failures(DATA, user_input), total_character_count), "percent correct")
 
