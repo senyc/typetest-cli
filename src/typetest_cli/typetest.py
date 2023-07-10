@@ -23,7 +23,7 @@ EXTERN_DIR: Final[str] = f'{user_dir}/.local/share/typetest-cli/text'
 
 @contextmanager
 def raw_mode(file):
-    """Puts the terminal into raw mode, allowing for full reading of user's input.
+    """Puts the terminal into raw mode, allowing for full reading of user input.
     On exit, restores the terminal to previous settings."""
     old_settings = termios.tcgetattr(file.fileno())
     try:
@@ -90,8 +90,8 @@ def add_to(current_input: str, new_char: str) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog='typetest',
-        description='Prints an interactable line of text for matching',
-        epilog='Only prints out stats if the entire line is written out'
+        description='Lightweight typing speed commandline tool. Can be exited with Ctrl-c or return.',
+        epilog='Will only disply typing speed and accuracy upon completion of the line'
     )
 
     parser.add_argument('--hide-acc', '-a', action='store_true', help='hides the accuracy statistic')

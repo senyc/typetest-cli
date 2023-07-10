@@ -1,26 +1,37 @@
 [build-system]
-    requires = ["setuptools"]
+requires = ["setuptools"]
 
 [project]
-    name = "typetest-cli"
-    version = "1.1.0"
-    authors = [
-        {name = "senyc"},
-    ]
-    description = "Prints an interactable line of text that records speed and accuracy of matching upon completion"
-    requires-python = ">=3.8"
-    dependencies = [
-        "rich",
-    ]
+name = "typetest-cli"
+version = "1.1.1"
+authors = [{ name = 'Kyler' }]
+description = "Lightweight typing speed commandline tool"
+readme = "README.rst"
+requires-python = ">=3.8"
+dependencies = ["rich"]
+keywords = ["speed", "test", "typing", "typetest", "typetest-cli", "terminal"]
+classifiers = [
+    "Operating System :: POSIX :: Linux",
+    "Environment :: Console",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+[project.urls]
+repository = "https://github.com"
+
+[project.scripts]
+typetest = "typetest_cli.typetest:main"
+typetest-cli = "typetest_cli.typetest:main"
+
 [tool.setuptools]
-    license-files = ["LICENSE"]
-    include-package-data = true
+license-files = ["LICENSE"]
 
 [tool.setuptools.package-data]
-    "typetest_cli.text" = ["*.txt"]
+"typetest_cli.text" = ["*.txt"]
 
 [tool.setuptools.packages.find]
-    where = ["src"]
-[project.scripts]
-    typetest = "typetest_cli.typetest:main"
-
+where = ["src"]
+exclude = ["tests*"]
