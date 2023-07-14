@@ -54,7 +54,7 @@ def calc_wpm(time_seconds: float, letters: int) -> int:
     return int(words // minutes)
 
 def get_accuracy(failures: int, letters: int) -> int:
-    return ((letters - failures) / letters) * 100
+    return int(((letters - failures) / letters) * 100)
 
 def count_failures(source: str, user_input: str) -> int:
     failures = 0
