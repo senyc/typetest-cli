@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from contextlib import contextmanager
-from typing import Final
 import argparse
 import glob
 import os
@@ -10,6 +8,8 @@ import sys
 import termios
 import time
 import tty
+from contextlib import contextmanager
+from typing import Final
 
 from rich.console import Console
 from rich.live import Live
@@ -19,6 +19,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 SOURCE_DIR: Final[str] = f'{here}/text'
 EXTERN_DIR: Final[str] = f'{user_dir}/.local/share/typetest-cli/text'
+MAX_SUBSEUQENT_ERRORS: Final[int] = 3
 
 @contextmanager
 def raw_mode(file):
@@ -74,10 +75,10 @@ def not_quit(char: str) -> bool:
     """Checks for SIGINT or return"""
     return not (char != '' and ord(char) == 3) or (char == '\n' or char == '\r')
 
-def add_to(current_input: str, new_char: str) -> str:
-    def is_backspace(char: str) -> bool:
-        return char == '\x7f'
+def is_backspace(char: str) -> bool:
+    return char == '\x7f'
 
+def add_to(current_input: str, new_char: str) -> str:
     if is_backspace(new_char):
         if len(current_input) > 0:
             return current_input[:-1]
@@ -85,6 +86,10 @@ def add_to(current_input: str, new_char: str) -> str:
             return current_input
     return current_input + new_char
 
+def is_input_error(char: str, DATA: str, input_index: int) -> bool:
+    if is_backspace(char):
+        return False
+    return char != DATA[input_index]
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -96,6 +101,7 @@ def main() -> None:
     parser.add_argument('--hide-acc', '-a', action='store_true', help='hides the accuracy statistic')
     parser.add_argument('--hide-wpm', '-w', action='store_true', help='hides the word per minute statistic')
     parser.add_argument('--only-base', '-b', action='store_false', help='Only uses the base text')
+    parser.add_argument('--no-blocking', '-n', action='store_false', help='Do not block input after 3 failed attmpts')
 
     args = parser.parse_args()
     if args.only_base:
@@ -109,12 +115,25 @@ def main() -> None:
     console = Console(soft_wrap=False, no_color=False)
     start = end = None
     user_input = ''
+    subsequent_errors: int = 0
 
     with Live(console=console, auto_refresh=False) as display:
         display.update(DATA, refresh=True)
-        while not_quit(char := get_char()) and len(user_input := add_to(user_input, char)) < len(DATA):
+        while not_quit(char := get_char()):
             if start is None:
                 start = time.time()
+
+            if args.no_blocking:
+                if is_input_error(char, DATA, len(user_input)):
+                    subsequent_errors += 1
+                    if subsequent_errors >= MAX_SUBSEUQENT_ERRORS:
+                        continue
+                else:
+                    subsequent_errors = 0
+
+            if len(user_input := add_to(user_input, char)) >= len(DATA):
+                break
+
             display.update(format_text(DATA, user_input), refresh=True)
         end = time.time()
         display.update(format_text(DATA, user_input), refresh=True)
