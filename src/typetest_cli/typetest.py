@@ -4,7 +4,6 @@ from contextlib import contextmanager
 from typing import Final
 import argparse
 import glob
-import math
 import os
 import random
 import sys
@@ -52,10 +51,10 @@ def format_text(source: str, user_input: str) -> str:
 def calc_wpm(time_seconds: float, letters: int) -> int:
     words = letters / 5
     minutes = time_seconds / 60
-    return math.floor(words / minutes)
+    return int(words // minutes)
 
 def get_accuracy(failures: int, letters: int) -> int:
-    return math.floor(((letters - failures) / letters) * 100)
+    return ((letters - failures) / letters) * 100
 
 def count_failures(source: str, user_input: str) -> int:
     failures = 0
