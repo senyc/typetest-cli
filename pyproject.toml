@@ -1,9 +1,12 @@
+[tool.black]
+line-length = 100
+
 [build-system]
 requires = ["setuptools"]
 
 [project]
 name = "typetest-cli"
-version = "1.2.1"
+version = "1.2.2"
 authors = [{ name = 'Kyler' }]
 description = "Lightweight typing speed commandline tool"
 readme = "README.rst"
@@ -34,4 +37,5 @@ license-files = ["LICENSE"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
-exclude = ["tests*"]
+exclude = ["*tests*"]
+
