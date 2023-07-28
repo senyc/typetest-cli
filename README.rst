@@ -1,6 +1,7 @@
 ================
 typetest-cli
 ================
+.. image:: https://github.com/senyc/typetest-cli/actions/workflows/tests.yml/badge.svg
 
 Python versions
 ===============
