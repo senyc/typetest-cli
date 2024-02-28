@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-from contextlib import contextmanager
-from itertools import zip_longest
-from typing import Final
 import argparse
 import glob
 import os
@@ -11,6 +8,9 @@ import sys
 import termios
 import time
 import tty
+from contextlib import contextmanager
+from itertools import zip_longest
+from typing import Final
 
 from rich.console import Console
 from rich.live import Live
@@ -109,7 +109,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         prog="typetest",
         description="Lightweight typing speed commandline tool. Can be exited with ctrl-c",
-        epilog="Will only disply typing speed and accuracy upon completion of the text.",
+        epilog="Will disply typing speed and accuracy upon completion of the text.",
     )
 
     parser.add_argument(
@@ -180,5 +180,5 @@ def main() -> None:
         print(calc_wpm(end - start, len(DATA), LETTERS_PER_WORD), "words per minute")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
