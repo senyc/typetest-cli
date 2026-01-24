@@ -20,7 +20,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 SOURCE_DIR: Final[str] = f"{here}/text"
 EXTERN_DIR: Final[str] = f"{user_dir}/.local/share/typetest-cli/text"
-MAX_SUBSEUQENT_ERRORS: Final[int] = 3
+MAX_SUBSEQUENT_ERRORS: Final[int] = 3
 LETTERS_PER_WORD: Final[int] = 5
 
 
@@ -109,7 +109,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         prog="typetest",
         description="Lightweight typing speed commandline tool. Can be exited with ctrl-c",
-        epilog="Will disply typing speed and accuracy upon completion of the text.",
+        epilog="Will display typing speed and accuracy upon completion of the text.",
     )
 
     parser.add_argument(
@@ -129,7 +129,7 @@ def main() -> None:
         "--no-blocking",
         "-n",
         action="store_false",
-        help="Do not block input after 3 failed attmpts",
+        help="Do not block input after 3 failed attempts",
     )
 
     args = parser.parse_args()
@@ -158,7 +158,7 @@ def main() -> None:
             if args.no_blocking:
                 if is_input_error(char, DATA, len(user_input)):
                     subsequent_errors += 1
-                    if subsequent_errors >= MAX_SUBSEUQENT_ERRORS:
+                    if subsequent_errors >= MAX_SUBSEQUENT_ERRORS:
                         continue
                 else:
                     subsequent_errors = 0
