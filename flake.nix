@@ -41,6 +41,8 @@
               with ps; [
                 rich
                 setuptools
+                twine
+                build
               ]))
           ];
         };
