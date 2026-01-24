@@ -1,8 +1,10 @@
 ================
 typetest-cli
 ================
-.. image:: https://github.com/senyc/typetest-cli/actions/workflows/tests.yml/badge.svg
-.. image:: https://static.pepy.tech/badge/typetest-cli
+|build| |downloads|
+
+.. |build| image:: https://github.com/senyc/typetest-cli/actions/workflows/tests.yml/badge.svg
+.. |downloads| image:: https://static.pepy.tech/badge/typetest-cli
 
 Python versions
 ===============
